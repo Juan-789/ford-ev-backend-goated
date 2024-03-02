@@ -4,8 +4,10 @@ token = "pk.eyJ1IjoianVhbi03ODkiLCJhIjoiY2x0YTQweHptMHAyYzJqcDlwZXgxMmswcSJ9.AhK
 weather_token = "c60f7979bd8746af860211144240203"
 
 # Example usage:
+current_battery = 0.72  # current battery percentage
 current_pressure = 39  # current tire pressure in psi
-current_car = "etrongt"  # current car model
+car_models = ["mme", "lightning", "nautilus", "etrongt"]
+current_car = random.choice(car_models)  # current car model
 mode = "sport"  # Example drive mode
 
 def getting_route(start_place: str, end_place: str):
@@ -40,7 +42,7 @@ def get_recommended_psi(car_model):
         "nautilus": 35,
         "etrongt": 42
     }
-    return recommended_psi_dict.get(car_model, 0)  # Return 0 if car_model not found
+    return recommended_psi_dict.get(car_model, 2)  # Return 0 if car_model not found
 
 def tire_pressure_status(current_psi, car_model):
     recommended_psi = get_recommended_psi(car_model)
@@ -85,6 +87,29 @@ def drive_mode(mode):
 
 energy_consumption = drive_mode(mode)
 print("Energy output usage for", mode, "mode:", energy_consumption, "%")
+
+def station_charging_level():
+    return random.randint(1, 3)
+
+# Example usage:
+charging_level = station_charging_level()
+print("Charging level at the station:", charging_level)
+
+def get_range(car_model):
+    range_dict = {
+        "mme": 402,
+        "lightning": 386,
+        "nautilus": 36,
+        "etrongt": 383
+    }
+    return range_dict.get(car_model, 0)  # Return 0 if car_model not found
+
+def get_remaining_range(current_car):
+    range_value = get_range(current_car)
+    return round(current_battery * range_value, 1)
+
+remaining_range = get_remaining_range(current_car)
+print("Remaining range for", current_car, ":", remaining_range, "km")
 
 def getTheWeather(city:str):
     response = requests.get(f"http://api.weatherapi.com/v1/forecast.json?key={weather_token}&q={city}&days=7&hour=24")
