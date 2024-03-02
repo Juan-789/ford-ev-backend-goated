@@ -1,6 +1,7 @@
 import requests
 import random
 token = "pk.eyJ1IjoianVhbi03ODkiLCJhIjoiY2x0YTQweHptMHAyYzJqcDlwZXgxMmswcSJ9.AhK_cgF4NpDOCBfyOd8hvw"
+weather_token = "c60f7979bd8746af860211144240203"
 
 # Example usage:
 current_pressure = 39  # current tire pressure in psi
@@ -84,3 +85,39 @@ def drive_mode(mode):
 
 energy_consumption = drive_mode(mode)
 print("Energy output usage for", mode, "mode:", energy_consumption, "%")
+
+def getTheWeather(city:str):
+    response = requests.get(f"http://api.weatherapi.com/v1/forecast.json?key={weather_token}&q={city}&days=7&hour=24")
+    print(response.url)
+
+    parsed_data = []
+
+    for forecast_day in response.json()['forecast']['forecastday']:
+        date = forecast_day['date']
+        max_temp_c = forecast_day['day']['maxtemp_c']
+        min_temp_c = forecast_day['day']['mintemp_c']
+        avg_temp_c = forecast_day['day']['avgtemp_c']
+        condition_text = forecast_day['day']['condition']['text']
+        max_wind_kph = forecast_day['day']['maxwind_kph']
+        total_precip_mm = forecast_day['day']['totalprecip_mm']
+        avg_visibility_km = forecast_day['day']['avgvis_km']
+        avg_humidity = forecast_day['day']['avghumidity']
+        uv_index = forecast_day['day']['uv']
+
+        parsed_data.append({
+            'date': date,
+            'max_temp_c': max_temp_c,
+            'min_temp_c': min_temp_c,
+            'avg_temp_c': avg_temp_c,
+            'condition_text': condition_text,
+            'max_wind_kph': max_wind_kph,
+            'total_precip_mm': total_precip_mm,
+            'avg_visibility_km': avg_visibility_km,
+            'avg_humidity': avg_humidity,
+            'uv_index': uv_index
+        })
+    print(parsed_data)
+    return parsed_data
+
+print()
+p = getTheWeather("moscow")
