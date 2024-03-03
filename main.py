@@ -5,6 +5,7 @@ from datetime import datetime
 token = "pk.eyJ1IjoianVhbi03ODkiLCJhIjoiY2x0YTQweHptMHAyYzJqcDlwZXgxMmswcSJ9.AhK_cgF4NpDOCBfyOd8hvw"
 weather_token = "c60f7979bd8746af860211144240203"
 APIkey = "4dcb332f6d75f64572a7c363b95ed548"
+googlekey = "AIzaSyDekKa-fWeb4rcrg5E2lH-6Krw5_CWxg2c"
 
 # Example usage:
 current_battery = 0.72  # current battery percentage
@@ -310,3 +311,103 @@ else:
 
 result = check_car_health(car_data)
 print('\n'+result)
+
+
+def chargingPointsInJourney(coordinates,initial_charge,max_charge):
+    response = requests.get(f"https://api.mapbox.com/directions/v5/mapbox/driving/{coordinates}.json?overview=false&alternatives=true&waypoints_per_route=true&engine=electric&ev_initial_charge={initial_charge}&ev_max_charge={max_charge}&ev_connector_types=ccs_combo_type1,ccs_combo_type2&energy_consumption_curve=0,300;20,160;80,140;120,180&ev_charging_curve=0,100000;40000,70000;60000,30000;80000,10000&ev_min_charge_at_charging_station=1&access_token={token}")
+    json_data = response.json()
+    
+    if 'routes' in json_data:
+        routes_data = json_data['routes']
+        waypoints_data = routes_data[0]['waypoints']  # assuming only one route is returned
+
+        waypoints = []
+        for waypoint in waypoints_data:
+            waypoint_info = {
+                'distance': waypoint['distance'],
+                'name': waypoint['name'],
+                'location': waypoint['location']
+            }
+            waypoints.append(waypoint_info)
+
+        duration = routes_data[0]['duration']
+
+        return waypoints, duration
+    else:
+        return None, None  # Or handle error case
+
+waypoints, duration = chargingPointsInJourney("-75.70094,45.424117;-75.683816,45.398896","5","500")
+if waypoints is not None:
+    print("Waypoints:")
+    for waypoint in waypoints:
+        print("Distance:", waypoint['distance'])
+        print("Name:", waypoint['name'])
+        print("Location:", waypoint['location'])
+    print("Duration:", duration)
+else:
+    print("Error: No routes found.")
+print()
+
+def places_nearby(search: str, longitude: str, latitude: str):
+    url = "https://places.googleapis.com/v1/places:searchText"
+    headers = {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': googlekey,
+        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.priceLevel,places.currentOpeningHours'
+    }
+    
+    # Convert data to JSON-serializable structure
+    data_json_serializable = {
+        "textQuery": search,
+        "locationBias": {
+            "circle": {
+                "center": {
+                    "latitude": float(latitude),
+                    "longitude": float(longitude)
+                },
+                "radius": 500.0
+            }
+        }
+    }
+
+    response = requests.post(url, json=data_json_serializable, headers=headers)
+    places = response.json().get('places', [])
+    
+    # Get current day of the week (0 is Monday, 6 is Sunday)
+    current_day = datetime.now().weekday()
+    
+    # Filter places based on current day's opening hours
+    filtered_places = []
+    for place in places:
+        opening_hours = place.get('currentOpeningHours', {}).get('periods', [])
+        if opening_hours and current_day < len(opening_hours):
+            today_hours = opening_hours[current_day]
+            if today_hours.get('open', {}).get('day') == current_day:
+                filtered_places.append(place)
+    
+    return extract_info(filtered_places)
+
+def extract_info(data):
+    extracted_info = []
+    for entry in data:
+        info = {
+            'formattedAddress': entry['formattedAddress'],
+            'displayName': entry['displayName']['text'],
+            'date': {
+                'year': entry['currentOpeningHours']['periods'][0]['open']['date']['year'],
+                'month': entry['currentOpeningHours']['periods'][0]['open']['date']['month'],
+                'day': entry['currentOpeningHours']['periods'][0]['open']['date']['day']
+            },
+            'open': {
+                'hour': entry['currentOpeningHours']['periods'][0]['open']['hour'],
+                'minute': entry['currentOpeningHours']['periods'][0]['open']['minute']
+            },
+            'close': {
+                'hour': entry['currentOpeningHours']['periods'][0]['close']['hour'],
+                'minute': entry['currentOpeningHours']['periods'][0]['close']['minute']
+            }
+        }
+        extracted_info.append(info)
+    return extracted_info
+
+print(places_nearby("mechanics", "-75.70094","45.424117"))
