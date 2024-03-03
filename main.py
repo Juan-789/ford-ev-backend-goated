@@ -35,6 +35,7 @@ def addressToCoord(address: str)->str:
     return str(longitude)+ ","+str(latitude) # coords
 
 beginning = addressToCoord("111 wellington Ottawa ")
+print(beginning)
 end = addressToCoord("1015 bank street ottawa")
 print(getting_route(beginning, end))
 
