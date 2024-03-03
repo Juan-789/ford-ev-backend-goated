@@ -2,6 +2,7 @@ import requests
 import random
 token = "pk.eyJ1IjoianVhbi03ODkiLCJhIjoiY2x0YTQweHptMHAyYzJqcDlwZXgxMmswcSJ9.AhK_cgF4NpDOCBfyOd8hvw"
 weather_token = "c60f7979bd8746af860211144240203"
+APIkey = "4dcb332f6d75f64572a7c363b95ed548"
 
 # Example usage:
 current_battery = 0.72  # current battery percentage
@@ -112,7 +113,7 @@ remaining_range = get_remaining_range(current_car)
 print("Remaining range for", current_car, ":", remaining_range, "km")
 
 def getTheWeather(city:str):
-    response = requests.get(f"http://api.weatherapi.com/v1/forecast.json?key={weather_token}&q={city}&days=7&hour=24")
+    response = requests.get(f"http://api.weatherapi.com/v1/forecast.json?key={weather_token}&q={city}")
     print(response.url)
 
     parsed_data = []
@@ -144,5 +145,35 @@ def getTheWeather(city:str):
     print(parsed_data)
     return parsed_data
 
+def getBasicWeather(city:str):
+    response = requests.get(f"http://api.weatherapi.com/v1/forecast.json?key={weather_token}&q={city}")
+    print(response.url)
+
+    parsed_data = []
+
+    for forecast_day in response.json()['forecast']['forecastday']:
+        date = forecast_day['date']
+        avg_temp_c = forecast_day['day']['avgtemp_c']
+        condition_text = forecast_day['day']['condition']['text']
+        total_precip_mm = forecast_day['day']['totalprecip_mm']
+        avg_humidity = forecast_day['day']['avghumidity']
+
+        parsed_data.extend([date, avg_temp_c, condition_text, total_precip_mm, avg_humidity])
+
+    print(parsed_data)
+    return parsed_data
+
+def getNearestCity(lat: int, lon: int):
+    response = requests.get(f"http://api.openweathermap.org/geo/1.0/reverse?lat={lat}&lon={lon}&appid={APIkey}")
+    city_data = response.json()
+    if city_data:  # Check if data is not empty
+        return city_data[0]['name']
+    else:
+        return None  # Or handle the case when no data is returned
+
 print()
-p = getTheWeather("moscow")
+#p = getBasicWeather("ottawa")
+nr = getNearestCity(43.661957, -79.381525)
+print("Nearest city:", nr)
+weather = getBasicWeather("43.661957, -79.381525")
+print("Basic weather data:", weather)
