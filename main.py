@@ -2,10 +2,10 @@ import requests
 import random
 from datetime import datetime
 
-token = "pk.eyJ1IjoianVhbi03ODkiLCJhIjoiY2x0YTQweHptMHAyYzJqcDlwZXgxMmswcSJ9.AhK_cgF4NpDOCBfyOd8hvw"
-weather_token = "c60f7979bd8746af860211144240203"
-APIkey = "4dcb332f6d75f64572a7c363b95ed548"
-googlekey = "AIzaSyDekKa-fWeb4rcrg5E2lH-6Krw5_CWxg2c"
+token = PUBLIC_MAPBOX_API
+weather_token = WEATHERTOKEN
+APIkey = CITYAPI
+googlekey = GOOGLEAPI
 
 # Example usage:
 current_battery = 0.72  # current battery percentage
